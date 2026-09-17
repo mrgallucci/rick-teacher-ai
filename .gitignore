@@ -78,3 +78,12 @@ agenthub/agents/youtube/db
 
 # Mobile development
 android-sdk/ 
+.env
+.env.*
+!.env.example
+node_modules/
+.venv/
+venv/
+__pycache__/
+.emergent/cron/
+*.zip
