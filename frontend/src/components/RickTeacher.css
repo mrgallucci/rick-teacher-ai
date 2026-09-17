@@ -1,0 +1,740 @@
+/* Rick Teacher - Learning English Styles */
+/* Tema Rick and Morty com animações de portal e partículas */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.rick-teacher-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #16213e 100%);
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  padding: 20px;
+}
+
+/* Portal Background Animation */
+.portal-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 255, 127, 0.05) 50%, transparent 100%);
+  animation: portalPulse 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes portalPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+/* Setup Screen */
+.setup-screen {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 40px 20px;
+}
+
+.rick-logo {
+  margin-bottom: 30px;
+  animation: floatAnimation 3s ease-in-out infinite;
+}
+
+@keyframes floatAnimation {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.game-title {
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: #00ff7f;
+  text-shadow: 0 0 20px #00ff7f, 0 0 40px #00ff7f;
+  margin-bottom: 10px;
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    text-shadow: 0 0 20px #00ff7f, 0 0 40px #00ff7f;
+  }
+  50% {
+    text-shadow: 0 0 30px #00ff7f, 0 0 60px #00ff7f, 0 0 80px #00ff7f;
+  }
+}
+
+.game-subtitle {
+  font-size: 1.5rem;
+  color: #87ceeb;
+  margin-bottom: 40px;
+}
+
+/* Rick Face */
+.rick-face {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+  border-radius: 50%;
+  position: relative;
+  background: linear-gradient(135deg, #e8f4f8 0%, #b8d4e0 100%);
+  border: 5px solid #00ff7f;
+  box-shadow: 0 0 30px rgba(0, 255, 127, 0.5);
+  transition: all 0.3s ease;
+}
+
+.rick-face::before {
+  content: '';
+  position: absolute;
+  top: 40%;
+  left: 25%;
+  width: 15px;
+  height: 15px;
+  background: #000;
+  border-radius: 50%;
+  box-shadow: 35px 0 0 #000;
+}
+
+.rick-face::after {
+  content: '';
+  position: absolute;
+  bottom: 30%;
+  left: 30%;
+  width: 40px;
+  height: 8px;
+  background: #000;
+  border-radius: 0 0 20px 20px;
+}
+
+.rick-face.happy {
+  animation: happyBounce 0.5s ease-in-out;
+  border-color: #ffd700;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+}
+
+.rick-face.happy::after {
+  border-radius: 20px 20px 0 0;
+  bottom: 35%;
+}
+
+@keyframes happyBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.rick-face.sad {
+  animation: sadShake 0.5s ease-in-out;
+  border-color: #ff4444;
+  box-shadow: 0 0 40px rgba(255, 68, 68, 0.8);
+}
+
+.rick-face.sad::after {
+  border-radius: 0 0 20px 20px;
+  transform: rotate(180deg);
+  bottom: 25%;
+}
+
+@keyframes sadShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+.rick-face.neutral {
+  animation: neutralBreathe 4s ease-in-out infinite;
+}
+
+@keyframes neutralBreathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Player Setup */
+.player-setup {
+  margin: 40px 0;
+}
+
+.player-setup label {
+  display: block;
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  color: #00ff7f;
+}
+
+.player-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 15px;
+  font-size: 1.2rem;
+  border: 3px solid #00ff7f;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.player-input:focus {
+  outline: none;
+  border-color: #ffd700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.start-button,
+.training-button,
+.listen-button,
+.back-button,
+.reset-button {
+  padding: 15px 40px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.start-button {
+  background: linear-gradient(135deg, #00ff7f 0%, #00cc66 100%);
+  color: #000;
+  box-shadow: 0 5px 20px rgba(0, 255, 127, 0.4);
+}
+
+.start-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 255, 127, 0.6);
+}
+
+.training-button {
+  background: linear-gradient(135deg, #87ceeb 0%, #4682b4 100%);
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(135, 206, 235, 0.4);
+}
+
+.training-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(135, 206, 235, 0.6);
+}
+
+.saved-progress {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(0, 255, 127, 0.1);
+  border: 2px solid #00ff7f;
+  border-radius: 10px;
+}
+
+.saved-progress p {
+  margin: 10px 0;
+  font-size: 1.1rem;
+}
+
+/* Instructions */
+.instructions {
+  margin-top: 40px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  border: 2px solid rgba(0, 255, 127, 0.3);
+  text-align: left;
+}
+
+.instructions h3 {
+  color: #00ff7f;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.instructions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.instructions li {
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  font-size: 1.1rem;
+}
+
+/* Game Screen */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.player-info {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 1.1rem;
+}
+
+.player-name {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.player-score {
+  color: #00ff7f;
+  font-weight: bold;
+}
+
+.player-level {
+  color: #87ceeb;
+  font-weight: bold;
+}
+
+.consecutive-info {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.game-mode-badge {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  border-radius: 20px;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+/* Rick Section */
+.rick-section {
+  text-align: center;
+  margin: 30px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.rick-speech-bubble {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  border-radius: 20px;
+  position: relative;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  animation: bubbleAppear 0.5s ease-out;
+}
+
+@keyframes bubbleAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rick-speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 15px solid rgba(255, 255, 255, 0.9);
+}
+
+.rick-speech-bubble p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-style: italic;
+}
+
+/* Color Display */
+.color-display-section {
+  text-align: center;
+  margin: 40px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.instruction-text {
+  font-size: 2rem;
+  color: #ffd700;
+  margin-bottom: 30px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.color-box {
+  width: 300px;
+  height: 300px;
+  margin: 0 auto;
+  border-radius: 20px;
+  border: 5px solid #fff;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: colorBoxPulse 2s ease-in-out infinite;
+}
+
+@keyframes colorBoxPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.color-shimmer {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.color-info {
+  margin-top: 20px;
+  font-size: 1.1rem;
+  color: #87ceeb;
+}
+
+/* Controls */
+.controls {
+  text-align: center;
+  margin: 40px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.listen-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+  font-size: 1.5rem;
+  padding: 20px 60px;
+  position: relative;
+}
+
+.listen-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 107, 107, 0.6);
+}
+
+.listen-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.listen-button.listening {
+  background: linear-gradient(135deg, #00ff7f 0%, #00cc66 100%);
+  animation: listeningPulse 1s ease-in-out infinite;
+}
+
+@keyframes listeningPulse {
+  0%, 100% {
+    box-shadow: 0 5px 20px rgba(0, 255, 127, 0.4);
+  }
+  50% {
+    box-shadow: 0 5px 40px rgba(0, 255, 127, 0.8);
+  }
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border: 3px solid #fff;
+  border-radius: 50px;
+  animation: pulseRing 1s ease-out infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 150%;
+    height: 150%;
+    opacity: 0;
+  }
+}
+
+/* Feedback Animation */
+.feedback-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: bold;
+  padding: 30px 60px;
+  border-radius: 20px;
+  z-index: 1000;
+  animation: feedbackAppear 0.5s ease-out, feedbackDisappear 0.5s ease-in 1.5s;
+  pointer-events: none;
+}
+
+.feedback-animation.correct {
+  background: linear-gradient(135deg, #00ff7f 0%, #00cc66 100%);
+  color: #000;
+  box-shadow: 0 10px 50px rgba(0, 255, 127, 0.8);
+}
+
+.feedback-animation.wrong {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  color: #fff;
+  box-shadow: 0 10px 50px rgba(255, 107, 107, 0.8);
+}
+
+.feedback-animation.levelup {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #000;
+  box-shadow: 0 10px 50px rgba(255, 215, 0, 0.8);
+  font-size: 2.5rem;
+}
+
+@keyframes feedbackAppear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes feedbackDisappear {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Statistics Panel */
+.stats-panel {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  border: 2px solid rgba(0, 255, 127, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.stats-panel h3 {
+  color: #00ff7f;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.8rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #87ceeb;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.stat-value.correct {
+  color: #00ff7f;
+}
+
+.stat-value.wrong {
+  color: #ff6b6b;
+}
+
+/* Navigation Buttons */
+.navigation-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 40px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.back-button {
+  background: linear-gradient(135deg, #87ceeb 0%, #4682b4 100%);
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(135, 206, 235, 0.4);
+}
+
+.back-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(135, 206, 235, 0.6);
+}
+
+.reset-button {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+}
+
+.reset-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 107, 107, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .game-title {
+    font-size: 2.5rem;
+  }
+
+  .game-subtitle {
+    font-size: 1.2rem;
+  }
+
+  .rick-face {
+    width: 120px;
+    height: 120px;
+  }
+
+  .color-box {
+    width: 250px;
+    height: 250px;
+  }
+
+  .instruction-text {
+    font-size: 1.5rem;
+  }
+
+  .feedback-animation {
+    font-size: 2rem;
+    padding: 20px 40px;
+  }
+
+  .listen-button {
+    font-size: 1.2rem;
+    padding: 15px 40px;
+  }
+
+  .player-info {
+    font-size: 0.9rem;
+    gap: 10px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 2rem;
+  }
+
+  .color-box {
+    width: 200px;
+    height: 200px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .start-button,
+  .training-button,
+  .listen-button,
+  .back-button,
+  .reset-button {
+    width: 100%;
+    max-width: 300px;
+  }
+}
