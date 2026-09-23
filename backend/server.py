@@ -1,171 +1,138 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
+from __future__ import annotations
+
 import logging
-from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
+import os
+from typing import Literal
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from openai import AsyncOpenAI
+from pydantic import BaseModel, Field
+
+load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("rick-teacher-ai")
+
+app = FastAPI(
+    title="Rick Teacher AI Local API",
+    version="3.0.0",
+    description="Minimal local API for the Rick Teacher AI portfolio project.",
+)
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-luna").strip()
+client = AsyncOpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Create the main app without a prefix
-app = FastAPI()
-
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+class TutorMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=1800)
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+class TutorChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=1200)
+    student_name: str = Field(default="Student", max_length=80)
+    level: str = Field(default="A1 - Beginner", max_length=40)
+    goal: str = Field(default="general English", max_length=120)
+    lesson_context: str = Field(default="", max_length=500)
+    history: list[TutorMessage] = Field(default_factory=list, max_length=12)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Rick Teacher Game Models
-class PlayerProgress(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    player_name: str
-    score: int = 0
-    level: int = 1
-    consecutive_correct: int = 0
-    total_attempts: int = 0
-    correct_answers: int = 0
-    wrong_answers: int = 0
-    last_played: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+class TutorChatResponse(BaseModel):
+    reply: str
+    model: str
 
-class PlayerProgressCreate(BaseModel):
-    player_name: str
-    score: int = 0
-    level: int = 1
-    consecutive_correct: int = 0
-    total_attempts: int = 0
-    correct_answers: int = 0
-    wrong_answers: int = 0
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+TUTOR_INSTRUCTIONS = """
+You are Rick Teacher AI, an independent English-learning tutor.
+The learner is a Brazilian Portuguese speaker at A1 beginner level.
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+Teaching rules:
+- Teach practical beginner English first.
+- Use short English examples and explain in Brazilian Portuguese when useful.
+- Correct mistakes gently and explain one important point at a time.
+- Prefer greetings, introductions, verb to be, numbers, family, food, everyday objects,
+  routines, time, directions and basic travel situations.
+- Adapt examples to the learner's stated goal and current lesson context.
+- End with exactly one short practice question or mini challenge in English.
+- Keep normal answers under 180 words unless the learner asks for more detail.
+- You receive text only; never claim to have evaluated pronunciation or audio quality.
+- Do not imitate or role-play any copyrighted TV or film character. Rick Teacher AI is only the product name.
+""".strip()
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
 
-# Rick Teacher Game Endpoints
-@api_router.post("/player/progress", response_model=PlayerProgress)
-async def save_player_progress(input: PlayerProgressCreate):
-    """Save or update player progress"""
-    player_dict = input.model_dump()
-    
-    # Check if player already exists
-    existing_player = await db.player_progress.find_one(
-        {"player_name": player_dict["player_name"]}, 
-        {"_id": 0}
-    )
-    
-    if existing_player:
-        # Update existing player
-        player_dict['last_played'] = datetime.now(timezone.utc).isoformat()
-        await db.player_progress.update_one(
-            {"player_name": player_dict["player_name"]},
-            {"$set": player_dict}
+@app.get("/api/health")
+async def health():
+    return {
+        "status": "ok",
+        "ai_configured": bool(client),
+        "model": OPENAI_MODEL,
+    }
+
+
+@app.post("/api/tutor/chat", response_model=TutorChatResponse)
+async def tutor_chat(payload: TutorChatRequest) -> TutorChatResponse:
+    if client is None:
+        raise HTTPException(
+            status_code=503,
+            detail="LLM não configurado. Adicione OPENAI_API_KEY em backend/.env e reinicie o servidor.",
         )
-        player_obj = PlayerProgress(**player_dict)
-    else:
-        # Create new player
-        player_obj = PlayerProgress(**player_dict)
-        doc = player_obj.model_dump()
-        doc['last_played'] = doc['last_played'].isoformat()
-        await db.player_progress.insert_one(doc)
-    
-    return player_obj
 
-@api_router.get("/player/progress/{player_name}", response_model=PlayerProgress)
-async def get_player_progress(player_name: str):
-    """Get player progress by name"""
-    player = await db.player_progress.find_one(
-        {"player_name": player_name}, 
-        {"_id": 0}
+    context = (
+        f"Student: {payload.student_name}. "
+        f"Level: {payload.level}. "
+        f"Goal: {payload.goal}. "
+        f"Current lesson: {payload.lesson_context or 'general beginner practice'}."
     )
-    
-    if not player:
-        # Return default progress if player not found
-        return PlayerProgress(player_name=player_name)
-    
-    # Convert ISO string timestamp back to datetime
-    if isinstance(player['last_played'], str):
-        player['last_played'] = datetime.fromisoformat(player['last_played'])
-    
-    return PlayerProgress(**player)
 
-@api_router.get("/player/leaderboard", response_model=List[PlayerProgress])
-async def get_leaderboard():
-    """Get top 10 players by score"""
-    players = await db.player_progress.find({}, {"_id": 0}).sort("score", -1).to_list(10)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for player in players:
-        if isinstance(player['last_played'], str):
-            player['last_played'] = datetime.fromisoformat(player['last_played'])
-    
-    return players
+    conversation = [
+        {"role": item.role, "content": item.content}
+        for item in payload.history[-10:]
+    ]
+    conversation.append(
+        {
+            "role": "user",
+            "content": f"{context}\n\nLearner message: {payload.message}",
+        }
+    )
 
-# Include the router in the main app
-app.include_router(api_router)
+    try:
+        response = await client.responses.create(
+            model=OPENAI_MODEL,
+            instructions=TUTOR_INSTRUCTIONS,
+            input=conversation,
+            max_output_tokens=500,
+            store=False,
+        )
+    except Exception as exc:
+        logger.exception("LLM request failed")
+        raise HTTPException(
+            status_code=502,
+            detail="O tutor não conseguiu responder. Confira chave, modelo e saldo da API.",
+        ) from exc
+
+    reply = (response.output_text or "").strip()
+    if not reply:
+        raise HTTPException(status_code=502, detail="O modelo retornou uma resposta vazia.")
+
+    return TutorChatResponse(reply=reply, model=OPENAI_MODEL)
+
+
+origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://127.0.0.1:5500,http://localhost:5500,http://127.0.0.1:5501,http://localhost:5501",
+    ).split(",")
+    if origin.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()

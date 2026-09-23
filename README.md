@@ -1,110 +1,117 @@
 # Rick Teacher AI
 
-Aplicação para praticar nomes de cores em inglês por meio de reconhecimento de voz, com pontuação, níveis e acompanhamento de desempenho.
+Projeto independente de aprendizagem de inglês básico, reconstruído a partir de um exercício antigo de programação e transformado em uma aplicação de portfólio voltada a **IA aplicada**.
 
-Evolução do [Rick Teacher original](https://github.com/mrgallucci/Rick-Teacher), desenvolvida com apoio do Emergent como parte da minha trajetória em desenvolvimento e inteligência artificial aplicada.
+## O que mudou
 
-## Objetivo
+A versão atual não depende de geradores de aplicação, plataformas de deploy ou componentes de terceiros no frontend. A interface foi reescrita em **HTML, CSS e JavaScript puros**, podendo ser aberta diretamente pelo **VS Code Live Server**.
 
-Explorar uma experiência interativa de aprendizado de vocabulário, combinando reconhecimento de voz, feedback visual e progressão de dificuldade.
-
-O reconhecimento compara a transcrição da fala com o nome esperado da cor. Não se trata de uma avaliação especializada de pronúncia.
+O tutor usa um backend local pequeno em FastAPI. A chave da API fica somente no arquivo local `backend/.env`, que é ignorado pelo Git.
 
 ## Funcionalidades
 
-- Identificação do jogador pelo nome.
-- Reconhecimento de voz configurado para inglês.
-- Modo de jogo com pontuação por acertos e erros.
-- Modo de treino sem desconto de pontos.
-- Progressão de nível a cada três acertos consecutivos.
-- Ampliação do conjunto de cores conforme o nível.
-- Estatísticas de tentativas, acertos, erros e percentual de acerto.
-- Feedback visual e sonoro.
-- Salvamento de progresso no navegador.
-- Opção de reiniciar o progresso.
-
-## Tecnologias
-
-| Camada | Tecnologias |
-|---|---|
-| Interface | React 19, JavaScript e CSS |
-| Reconhecimento de voz | Web Speech API |
-| Persistência local | localStorage |
-| API | Python, FastAPI e Pydantic |
-| Banco de dados | MongoDB e Motor |
-| Ferramentas do frontend | Yarn e CRACO |
-
-## Uso de IA no desenvolvimento
-
-O Emergent foi utilizado como apoio à elaboração e evolução do código. O projeto documenta minha prática de desenvolvimento assistido por IA.
-
-O nome do repositório faz referência a esse processo. Não há integração com um modelo de linguagem no fluxo atual do jogo.
-
-## Como jogar
-
-1. Informe seu nome.
-2. Selecione **Start Game** ou **Training Mode**.
-3. Observe a cor apresentada.
-4. Clique em **Click to Speak** e pronuncie o nome em inglês.
-5. Acompanhe sua pontuação e suas estatísticas.
-
-No modo de jogo, cada acerto acrescenta um ponto e cada erro desconta um ponto, respeitando o mínimo de zero.
+- onboarding simples com nome e objetivo;
+- trilha A1 com 8 unidades;
+- vocabulário, exemplos e áudio via Web Speech API;
+- mini quizzes;
+- XP, porcentagem de conclusão e precisão;
+- persistência com LocalStorage;
+- tutor contextual com LLM real;
+- prompts rápidos para prática;
+- interface responsiva;
+- zero dependências JavaScript no frontend.
 
 ## Estrutura
 
 ```text
-backend/
-  server.py
-  requirements.txt
-frontend/
-  public/
-  src/
-    App.js
-    components/
-      RickTeacher.js
-      RickTeacher.css
-    utils/
-      colors.js
-  package.json
-  yarn.lock
+rick-teacher-ai/
+├── index.html
+├── style.css
+├── curriculum.js
+├── app.js
+├── backend/
+│   ├── server.py
+│   ├── requirements.txt
+│   └── .env.example
+├── .gitignore
+└── README.md
 ```
 
-## Execução local
+## 1. Abrir o frontend pelo Live Server
 
-Os comandos abaixo descrevem a configuração de desenvolvimento; a execução em uma instalação limpa ainda precisa ser validada.
+Abra a pasta do projeto no VS Code e clique com o botão direito em `index.html` → **Open with Live Server**.
 
-### Frontend
+O frontend funciona sem backend para:
 
-Com Node.js e Yarn Classic disponíveis:
+- trilhas;
+- exercícios;
+- progresso;
+- LocalStorage;
+- síntese de voz disponível no navegador.
 
-```bash
-cd frontend
-yarn install --frozen-lockfile
-yarn start
+O tutor de IA exibirá `offline` até o backend ser iniciado.
+
+## 2. Configurar o tutor LLM
+
+No PowerShell, dentro da pasta `backend`:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
-Abra o endereço informado no terminal.
+Abra `backend/.env` e coloque sua chave:
 
-O jogo utiliza armazenamento local e não depende da API para salvar o progresso atual.
-
-### Backend opcional
-
-Para explorar a API, disponibilize uma instância do MongoDB e crie `backend/.env`:
-
-```dotenv
-MONGO_URL=mongodb://localhost:27017
-DB_NAME=rick_teacher
-CORS_ORIGINS=http://localhost:3000
+```env
+OPENAI_API_KEY=sua_chave_aqui
+OPENAI_MODEL=gpt-5.6-luna
 ```
 
-Em um ambiente virtual Python ativado:
+Nunca envie `.env` para o GitHub.
 
-```bash
-cd backend
-python -m pip install -r requirements.txt
-python -m uvicorn server:app --reload --port 8000
+## 3. Iniciar o backend
+
+Ainda dentro de `backend`:
+
+```powershell
+uvicorn server:app --reload --host 127.0.0.1 --port 8000
 ```
 
-A documentação da API fica em `http://localhost:8000/docs`.
+Depois atualize a página aberta pelo Live Server. O indicador no topo deverá mudar para **Tutor IA conectado**.
 
-A rota auxiliar `/home` do frontend utiliza
+## Arquitetura
+
+```text
+Live Server (HTML/CSS/JS)
+        ↓ HTTP local
+FastAPI em 127.0.0.1:8000
+        ↓
+OpenAI Responses API
+        ↓
+Resposta contextual para o aluno
+```
+
+## Por que existe um backend?
+
+A chave de uma API de IA não deve ser colocada no JavaScript entregue ao navegador. Por isso o frontend pode ser totalmente estático, mas o acesso ao LLM passa por um servidor local mínimo.
+
+## Direção do projeto
+
+O conteúdo curricular permanece determinístico e previsível. O LLM é usado onde agrega valor: explicações, correção de frases, geração de exemplos e prática contextual. Isso reduz dependência do modelo para tarefas que não precisam ser generativas e deixa mais clara a arquitetura de IA aplicada.
+
+## Próximas evoluções possíveis
+
+- avaliação de escrita com critérios estruturados;
+- histórico de erros recorrentes;
+- recomendação adaptativa da próxima lição;
+- geração de exercícios por dificuldade;
+- autenticação real e persistência em banco de dados;
+- deploy independente do frontend e da API.
+
+## Autor
+
+**Maxwell Gallucci Rodrigues**
+
+Projeto reconstruído para estudo e portfólio profissional.

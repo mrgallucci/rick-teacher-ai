@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rick Teacher AI — plataforma independente para aprender inglês básico com trilha A1, exercícios e tutor com LLM." />
+  <meta name="author" content="Maxwell Gallucci Rodrigues" />
+  <meta name="theme-color" content="#07130f" />
+  <meta property="og:title" content="Rick Teacher AI" />
+  <meta property="og:description" content="English Learning Lab com trilha A1 e tutor inteligente." />
+  <meta property="og:type" content="website" />
+  <title>Rick Teacher AI | English Learning Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Rick Teacher AI - início">
+        <span class="brand-mark">R</span>
+        <span class="brand-copy"><strong>Rick Teacher AI</strong><small>English Learning Lab</small></span>
+      </a>
+      <nav class="topnav" aria-label="Navegação principal">
+        <button class="nav-button active" data-view="learn">Aprender</button>
+        <button class="nav-button" data-view="tutor">Tutor IA</button>
+        <button class="nav-button" data-view="progress">Progresso</button>
+      </nav>
+      <div class="header-status">
+        <span id="aiDot" class="status-dot"></span>
+        <span id="aiStatus">Tutor verificando...</span>
+      </div>
+    </header>
+
+    <main>
+      <section id="onboarding" class="onboarding hidden">
+        <div class="onboarding-copy">
+          <span class="eyebrow">ENGLISH LEARNING • A1 BEGINNER</span>
+          <h1>Inglês prático, do zero, com um tutor que acompanha seu contexto.</h1>
+          <p>Comece com apresentações, verbo <em>to be</em>, números, rotina e situações úteis. O tutor com LLM entra para explicar, corrigir e criar prática personalizada.</p>
+          <div class="feature-chips">
+            <span>8 unidades A1</span><span>Mini quizzes</span><span>Progresso local</span><span>Tutor LLM</span>
+          </div>
+        </div>
+        <form id="onboardingForm" class="onboarding-card">
+          <span class="eyebrow">SEU PONTO DE PARTIDA</span>
+          <h2>Monte sua primeira trilha</h2>
+          <label for="studentName">Como podemos chamar você?</label>
+          <input id="studentName" name="studentName" maxlength="50" placeholder="Seu nome" required />
+          <label for="studentGoal">Qual é seu objetivo principal?</label>
+          <select id="studentGoal" name="studentGoal">
+            <option value="general">Construir uma base geral</option>
+            <option value="conversation">Conversação básica</option>
+            <option value="travel">Viagens</option>
+            <option value="work">Trabalho e estudos</option>
+          </select>
+          <button class="primary-button" type="submit">Começar minha trilha →</button>
+          <small>Seu progresso fica salvo apenas neste navegador.</small>
+        </form>
+      </section>
+
+      <section id="learnView" class="view-section">
+        <section class="hero" id="inicio">
+          <div>
+            <span class="eyebrow">TRILHA A1 • INGLÊS ESSENCIAL</span>
+            <h1 id="heroGreeting">Sua base começa aqui.</h1>
+            <p>Pequenas lições, vocabulário útil, contexto real e prática progressiva. Nada de decorar palavras soltas para sempre.</p>
+            <div class="hero-actions">
+              <button id="continueButton" class="primary-button">Continuar aprendendo</button>
+              <button class="secondary-button" data-go-tutor>Praticar com a IA</button>
+            </div>
+          </div>
+          <aside class="hero-stats" aria-label="Resumo de progresso">
+            <div><strong id="heroProgress">0%</strong><span>da trilha</span></div>
+            <div><strong id="heroXp">0</strong><span>XP</span></div>
+            <div><strong id="heroAccuracy">0%</strong><span>acertos</span></div>
+          </aside>
+        </section>
+
+        <section class="section-block">
+          <div class="section-heading">
+            <div><span class="eyebrow">CAMINHO DE APRENDIZADO</span><h2>Fundamentos antes da conversa avançada</h2></div>
+            <span id="lessonCounter" class="soft-badge">0/8 concluídas</span>
+          </div>
+          <div id="lessonGrid" class="lesson-grid"></div>
+        </section>
+
+        <section class="section-block smart-lab">
+          <div>
+            <span class="eyebrow">AI LEARNING LAB</span>
+            <h2>A IA entra onde realmente ajuda.</h2>
+            <p>O conteúdo-base é estruturado. O LLM é usado para correções, explicações, exemplos e conversação adaptada ao seu nível e objetivo.</p>
+          </div>
+          <button class="secondary-button" data-go-tutor>Abrir tutor →</button>
+        </section>
+      </section>
+
+      <section id="lessonView" class="view-section hidden">
+        <button id="backToLearn" class="back-button">← Voltar para a trilha</button>
+        <div id="lessonContent"></div>
+      </section>
+
+      <section id="tutorView" class="view-section hidden">
+        <div class="tutor-layout">
+          <aside class="tutor-sidebar">
+            <span class="eyebrow">TUTOR CONTEXTUAL</span>
+            <h2>Rick Teacher AI</h2>
+            <p>Um tutor experimental conectado a um LLM real. Ele recebe seu nível, objetivo e lição atual para responder com mais contexto.</p>
+            <div id="tutorContext" class="context-card"></div>
+            <h3>Atalhos</h3>
+            <div id="quickPrompts" class="quick-prompts"></div>
+            <div class="architecture-note">
+              <strong>Como funciona</strong>
+              <span>Navegador → API local → LLM → resposta</span>
+            </div>
+          </aside>
+          <section class="chat-panel">
+            <div class="chat-header">
+              <div><strong>Tutor de inglês</strong><span id="chatModel">Modelo: aguardando conexão</span></div>
+              <span class="lab-badge">LLM LAB</span>
+            </div>
+            <div id="chatLog" class="chat-log" aria-live="polite"></div>
+            <form id="chatForm" class="chat-form">
+              <textarea id="chatInput" rows="2" maxlength="1200" placeholder="Ex.: Correct this: I have 30 years old."></textarea>
+              <div class="chat-actions">
+                <button id="voiceButton" type="button" class="icon-button" title="Ditado por voz">🎙️</button>
+                <button type="submit" class="primary-button">Enviar</button>
+              </div>
+            </form>
+            <p class="microcopy">O tutor é experimental. Para usar o LLM, inicie o backend local e configure sua própria chave de API.</p>
+          </section>
+        </div>
+      </section>
+
+      <section id="progressView" class="view-section hidden">
+        <div class="progress-page">
+          <span class="eyebrow">SEU PROGRESSO</span>
+          <h1>Pequenos avanços, registrados localmente.</h1>
+          <div class="progress-cards">
+            <article><span>Trilha</span><strong id="progressCompletion">0%</strong><small>unidades concluídas</small></article>
+            <article><span>Experiência</span><strong id="progressXp">0 XP</strong><small>ganhos em exercícios</small></article>
+            <article><span>Precisão</span><strong id="progressAccuracy">0%</strong><small>respostas corretas</small></article>
+          </div>
+          <div class="progress-panel">
+            <div><h2>Perfil de aprendizagem</h2><p id="progressProfile">Nenhum perfil configurado.</p></div>
+            <button id="resetProgress" class="danger-button">Reiniciar progresso</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div><strong>Rick Teacher AI</strong><span>Projeto independente de aprendizagem de inglês.</span></div>
+      <p>HTML5 • CSS3 • JavaScript • LocalStorage • FastAPI • OpenAI Responses API</p>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="curriculum.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
